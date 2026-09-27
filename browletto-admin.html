@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browletto — Admin</title>
+<link rel="manifest" href="manifest-admin.json">
+<meta name="theme-color" content="#5C2E22">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Browletto Admin">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+  :root{
+    --bg:#F0E1D2;
+    --card:#FAF3E9;
+    --brown:#8A4A38;
+    --brown-dark:#5C2E22;
+    --ink:#4A2A1F;
+    --line:rgba(90,46,34,0.16);
+    --accent:#B5694E;
+    --green:#2E8B57;
+    --red:#B0402F;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Space Grotesk',sans-serif;
+    min-height:100vh;
+  }
+
+  /* ── Login gate ── */
+  #gate{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    padding:20px;
+    text-align:center;
+  }
+  #gate .mark{
+    font-family:'Poppins',sans-serif;
+    font-weight:800;
+    font-size:26px;
+    letter-spacing:3px;
+    color:var(--brown-dark);
+  }
+  #gate input{
+    width:220px;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:var(--card);
+    font-size:16px;
+    text-align:center;
+    letter-spacing:4px;
+  }
+  #gate button{
+    padding:12px 28px;
+    border-radius:10px;
+    border:none;
+    background:var(--brown);
+    color:#fff;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+  }
+  #gate .err{ color:var(--red); font-size:13px; min-height:16px; }
+  #gate .hint{ font-size:11.5px; color:rgba(74,42,31,0.5); max-width:260px; }
+
+  /* ── App shell ── */
+  #app{ display:none; padding-bottom:60px; }
+  header{
+    padding:22px 18px 16px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  header .mark{
+    font-family:'Poppins',sans-serif;
+    font-weight:800;
+    font-size:20px;
+    letter-spacing:2px;
+    color:var(--brown-dark);
+  }
+  header .status{
+    font-size:11px;
+    font-weight:600;
+    padding:4px 10px;
+    border-radius:20px;
+  }
+  header .status.ok{ background:rgba(46,139,87,0.15); color:var(--green); }
+  header .status.bad{ background:rgba(176,64,47,0.15); color:var(--red); }
+
+  .tabs{
+    display:flex;
+    gap:6px;
+    padding:12px 16px 0;
+    max-width:640px;
+    margin:0 auto;
+  }
+  .tabs button{
+    flex:1;
+    padding:10px 0;
+    border-radius:10px 10px 0 0;
+    border:1px solid var(--line);
+    border-bottom:none;
+    background:var(--card);
+    color:var(--brown-dark);
+    font-family:'Poppins',sans-serif;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    opacity:0.5;
+  }
+  .tabs button.active{ opacity:1; background:#fff; }
+
+  .panel{
+    max-width:640px;
+    margin:0 auto;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:0 0 14px 14px;
+    padding:16px;
+    display:none;
+  }
+  .panel.active{ display:block; }
+
+  .toolbar{
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    padding:9px 14px;
+    border-radius:9px;
+    border:1px solid var(--brown);
+    background:transparent;
+    color:var(--brown);
+    font-family:'Poppins',sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .btn.primary{ background:var(--brown); color:#fff; }
+  .btn.save{ background:var(--green); border-color:var(--green); color:#fff; }
+  .btn.danger{ color:var(--red); border-color:var(--red); }
+
+  .catblock{
+    border:1px solid var(--line);
+    border-radius:12px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .catblock .cathead{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 12px;
+    background:var(--bg);
+  }
+  .catblock .cathead input{
+    font-family:'Poppins',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--brown-dark);
+    border:none;
+    background:transparent;
+    width:70%;
+  }
+  .row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 12px;
+    border-top:1px solid var(--line);
+    flex-wrap:wrap;
+  }
+  .row input[type=text]{
+    flex:2;
+    min-width:120px;
+    padding:7px 9px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    font-size:13px;
+  }
+  .row input[type=number]{
+    width:64px;
+    padding:7px 6px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    font-size:13px;
+  }
+  .row label.avail{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    font-size:11px;
+    color:rgba(74,42,31,0.6);
+    white-space:nowrap;
+  }
+  .row .del{
+    background:none;
+    border:none;
+    color:var(--red);
+    font-size:16px;
+    cursor:pointer;
+    padding:0 4px;
+  }
+  .additem{
+    padding:9px 12px;
+    border-top:1px solid var(--line);
+  }
+  .additem button{
+    font-size:12px;
+    color:var(--brown);
+    background:none;
+    border:none;
+    cursor:pointer;
+    font-weight:600;
+  }
+
+  .order-card{
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:10px;
+  }
+  .order-card .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+  }
+  .order-card .time{ font-size:11px; color:rgba(74,42,31,0.5); }
+  .order-card ul{ margin:6px 0; padding-left:18px; font-size:13px; }
+  .order-card .total{ font-weight:700; color:var(--accent); font-family:'Poppins',sans-serif; }
+  .order-card select{
+    padding:6px 8px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    font-size:12px;
+    font-weight:600;
+  }
+  .empty{ text-align:center; padding:30px 10px; color:rgba(74,42,31,0.5); font-size:13px; }
+  .savebar{
+    max-width:640px;
+    margin:14px auto 0;
+    padding:0 16px;
+    display:flex;
+    justify-content:flex-end;
+  }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="mark">BROWLETTO ADMIN</div>
+  <input id="pin" type="password" placeholder="Enter PIN" maxlength="12">
+  <button onclick="tryLogin()">Unlock</button>
+  <div class="err" id="loginErr"></div>
+  <div class="hint">Change the PIN in the code (ADMIN_PASSCODE) before sharing this link with staff.</div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="mark">BROWLETTO ADMIN</div>
+    <div class="status" id="connStatus">checking…</div>
+  </header>
+
+  <div class="tabs">
+    <button class="active" id="tabMenuBtn" onclick="showTab('menu')">Menu</button>
+    <button id="tabOrdersBtn" onclick="showTab('orders')">Orders</button>
+  </div>
+
+  <div class="panel active" id="tabMenu">
+    <div class="toolbar">
+      <button class="btn primary" onclick="addCategory()">+ Add Category</button>
+      <button class="btn" onclick="seedDefault()">Seed default menu</button>
+      <button class="btn" onclick="downloadBackup()">⬇ Download menu backup</button>
+      <label class="btn" style="cursor:pointer;">
+        ⬆ Upload backup
+        <input type="file" accept="application/json" style="display:none;" onchange="uploadBackup(this)">
+      </label>
+    </div>
+    <div id="catList"></div>
+    <div class="savebar">
+      <button class="btn save" onclick="saveMenu()">Save Changes</button>
+    </div>
+  </div>
+
+  <div class="panel" id="tabOrders">
+    <div id="ordersList"><div class="empty">No orders yet.</div></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+// ── Change this before sharing the admin link with anyone ──
+const ADMIN_PASSCODE = "browletto123";
+
+// ── Same Firebase project as browletto-order.html — fill in once, both pages share it ──
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+let db = null, firebaseReady = false;
+try {
+  if (firebaseConfig.projectId !== "YOUR_PROJECT_ID") {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    firebaseReady = true;
+  }
+} catch (e) { console.warn(e); }
+
+function tryLogin(){
+  const val = document.getElementById('pin').value;
+  if (val === ADMIN_PASSCODE) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    boot();
+  } else {
+    document.getElementById('loginErr').textContent = 'Wrong PIN, try again.';
+  }
+}
+document.getElementById('pin').addEventListener('keydown', e => { if(e.key === 'Enter') tryLogin(); });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW registration failed', e));
+  });
+}
+
+function showTab(name){
+  document.getElementById('tabMenu').classList.toggle('active', name === 'menu');
+  document.getElementById('tabOrders').classList.toggle('active', name === 'orders');
+  document.getElementById('tabMenuBtn').classList.toggle('active', name === 'menu');
+  document.getElementById('tabOrdersBtn').classList.toggle('active', name === 'orders');
+}
+
+let CATEGORIES = [];
+
+// Same starting menu as the customer page, used only for "Seed default menu"
+const DEFAULT_MENU = [
+  { cat: "Waffles", items: [
+    { name: "Belgium Milk Chocolate", desc: "", price: 130 },
+    { name: "Belgium White Chocolate", desc: "", price: 130 },
+    { name: "Belgium Dark Chocolate", desc: "", price: 130 },
+    { name: "Cadbury Waffle", desc: "", price: 130 },
+    { name: "Brownie Waffle", desc: "", price: 130 },
+    { name: "Oreo Waffle", desc: "", price: 130 },
+    { name: "Kitkat Waffle", desc: "", price: 130 },
+    { name: "Triple Chocolate Waffle", desc: "", price: 130 },
+    { name: "Brownie Kitkat Waffle", desc: "", price: 140 },
+    { name: "Hazelnut Waffle", desc: "", price: 140 },
+    { name: "Coffee Crunch Waffle", desc: "", price: 140 },
+    { name: "Nutella Naked", desc: "", price: 140 },
+    { name: "Crunchy Nutella Waffle", desc: "", price: 140 },
+    { name: "Biscoff Waffle", desc: "", price: 140 },
+    { name: "Biscoff Nutella Waffle", desc: "", price: 140 },
+    { name: "Red Velvet Waffle", desc: "", price: 150 },
+    { name: "Kunafa Waffle", desc: "", price: 160 },
+    { name: "Add-on Ice Cream", desc: "", price: 30 },
+    { name: "Dry-fruit Single Layer Waffle Cake", desc: "", price: 300 }, // verify
+    { name: "Double Layer Waffle Cake", desc: "", price: 350 }, // verify
+    { name: "Dry-fruit Double Layer Waffle Cake", desc: "", price: 500 }, // verify
+  ]},
+  { cat: "Hot Melting Brownies", items: [
+    { name: "Choco Lava Cake", desc: "", price: 80 },
+    { name: "Brownie Chocochips", desc: "", price: 100 },
+    { name: "Brownie Fudge", desc: "", price: 100 },
+    { name: "Red Velvet Lava Cake", desc: "", price: 100 },
+    { name: "White Chocolate Brownie Fudge", desc: "", price: 130 },
+    { name: "Sizzling Brownie", desc: "", price: 130 },
+    { name: "Nutella Brownie Fudge", desc: "", price: 130 },
+    { name: "Nutella Kitkat Brownie", desc: "", price: 140 },
+    { name: "Roasted Almond Brownie", desc: "", price: 140 },
+    { name: "Macadamia Almonds Brownie", desc: "", price: 140 },
+    { name: "Oreo Brownie Fudge", desc: "", price: 140 },
+    { name: "Hazelnut Brownie Fudge", desc: "", price: 140 },
+    { name: "Kunafa Brownie", desc: "", price: 170 }, // verify
+    { name: "Biscoff Brownie", desc: "", price: 170 }, // verify
+  ]},
+  { cat: "Ice Creams", items: [
+    { name: "Vanilla", desc: "", price: 50 },
+    { name: "Strawberry", desc: "", price: 50 },
+    { name: "Butterscotch", desc: "", price: 60 },
+    { name: "Cookies and Cream", desc: "", price: 60 },
+    { name: "Choco Chips", desc: "", price: 60 },
+    { name: "Black Current", desc: "", price: 60 },
+    { name: "American Nuts", desc: "", price: 70 },
+    { name: "Mango", desc: "", price: 70 },
+    { name: "Swiss Cake", desc: "", price: 70 },
+    { name: "Roasted Almond", desc: "", price: 70 },
+    { name: "Blueberry Cheese Cake", desc: "", price: 70 },
+    { name: "Rajwadi", desc: "", price: 80 },
+    { name: "Tajmahal", desc: "", price: 80 },
+    { name: "Mud Cake", desc: "", price: 80 },
+    { name: "Tender Coconut", desc: "", price: 80 },
+    { name: "Charcoal Litchi", desc: "", price: 80 },
+    { name: "Kesar Pista", desc: "", price: 80 },
+    { name: "Dark Chocolate", desc: "", price: 80 },
+    { name: "Mocha Brownie Fudge", desc: "", price: 80 },
+  ]},
+  { cat: "Shots", items: [
+    { name: "Jamun Shots", desc: "", price: 100 },
+    { name: "Guava Shots", desc: "", price: 100 },
+  ]},
+  { cat: "Mini Pan Cakes", items: [
+    { name: "Milk Chocolate", desc: "", price: 150 },
+    { name: "Dark Knight", desc: "", price: 150 },
+    { name: "White Beauty", desc: "", price: 150 },
+    { name: "Kitkat Break", desc: "", price: 150 },
+    { name: "Triple Loaded", desc: "", price: 150 },
+    { name: "Biscoff Loaded", desc: "", price: 150 },
+    { name: "Oreo", desc: "", price: 150 },
+    { name: "Nutella Crunch", desc: "", price: 150 },
+    { name: "Crunchy Almond", desc: "", price: 160 }, // verify
+  ]},
+  { cat: "Sugar-Free Ice Cream", items: [
+    { name: "Vanilla", desc: "", price: 110 },
+    { name: "Chocolate", desc: "", price: 110 },
+    { name: "Kesar Pista", desc: "", price: 120 },
+    { name: "Anjeer", desc: "", price: 120 },
+  ]},
+  { cat: "Hot Chocolates", items: [
+    { name: "Hot Chocolate", desc: "", price: 130 },
+    { name: "Vanilla Hot Chocolate", desc: "", price: 130 },
+    { name: "Hazelnut Hot Chocolate", desc: "", price: 130 },
+    { name: "Brownie Hot Chocolate", desc: "", price: 130 },
+    { name: "Coffee Hot Chocolate", desc: "", price: 130 },
+    { name: "Tiramisu Hot Chocolate", desc: "", price: 130 },
+    { name: "Chocolate Cookie", desc: "", price: 130 },
+    { name: "Cookie Hot Chocolate", desc: "", price: 150 },
+  ]},
+  { cat: "Hot Coffee", items: [
+    { name: "Hot Coffee", desc: "", price: 80 },
+    { name: "Black Americano", desc: "", price: 80 },
+    { name: "Cappuccino", desc: "", price: 90 },
+    { name: "French Vanilla Latte", desc: "", price: 100 },
+    { name: "Cafe Mocha", desc: "", price: 100 },
+    { name: "Nutella Mocha", desc: "", price: 100 },
+    { name: "White Mocha", desc: "", price: 100 },
+  ]},
+  { cat: "Coffee & Frappe", items: [
+    { name: "Cold Coffee", desc: "", price: 100 },
+    { name: "Cafe Frappe", desc: "", price: 110 },
+    { name: "Irish Frappe", desc: "", price: 130 },
+    { name: "Hazelnut Frappe", desc: "", price: 130 },
+    { name: "Choco Frappe", desc: "", price: 130 },
+    { name: "Chocolate Cookie Frappe", desc: "", price: 130 },
+    { name: "Cookie Coffee Latte", desc: "", price: 150 },
+    { name: "Tiramisu Cake", desc: "New launch", price: 130 },
+    { name: "Treslache", desc: "New launch", price: 180 },
+  ]},
+  { cat: "Classic Shakes", items: [
+    { name: "Plain Vanilla", desc: "", price: 70 },
+    { name: "Choco Rose", desc: "", price: 70 },
+    { name: "Choco Pie", desc: "", price: 90 },
+    { name: "Belgium Choco Chips", desc: "", price: 90 },
+    { name: "Munch", desc: "", price: 90 },
+    { name: "Rose Gulkand", desc: "", price: 100 },
+    { name: "Gems", desc: "", price: 100 }, // verify
+    { name: "Paan Masti", desc: "", price: 110 },
+    { name: "Bubble Gum", desc: "", price: 110 },
+    { name: "Oreo", desc: "", price: 110 },
+    { name: "Kitkat", desc: "", price: 110 },
+    { name: "Swiss", desc: "", price: 110 },
+    { name: "Chocolate Fudge", desc: "", price: 110 },
+    { name: "Cadbury Silk", desc: "", price: 110 },
+    { name: "Snickers", desc: "", price: 110 },
+    { name: "Red Velvet Shake", desc: "", price: 130 },
+    { name: "Coffee Caramel Shake", desc: "", price: 130 },
+  ]},
+  { cat: "Natural Shakes", items: [
+    { name: "Strawberry", desc: "", price: 80 },
+    { name: "Mango", desc: "", price: 90 },
+    { name: "Litchi", desc: "", price: 100 },
+    { name: "Sitaphal", desc: "", price: 100 },
+    { name: "Pineapple", desc: "", price: 110 },
+    { name: "Chikoo", desc: "", price: 110 },
+    { name: "Triple Berry", desc: "", price: 130 },
+    { name: "Blueberry", desc: "", price: 130 },
+    { name: "Raspberry", desc: "", price: 140 },
+    { name: "Mango Alphonso", desc: "", price: 160 },
+  ]},
+  { cat: "Nutella Lover's", items: [
+    { name: "Plain Nutella", desc: "", price: 110 },
+    { name: "Crunchy Nutella", desc: "", price: 140 },
+    { name: "Oreo Nutella", desc: "", price: 140 },
+    { name: "Kitkat Nutella", desc: "", price: 140 },
+    { name: "Nutties Nutella", desc: "", price: 140 },
+    { name: "Swiss Nutella", desc: "", price: 160 },
+    { name: "Roacher Nutella", desc: "", price: 160 },
+    { name: "Nutella Biscoff", desc: "", price: 160 },
+  ]},
+  { cat: "Brownie Thick Shakes", items: [
+    { name: "Brewing Brownie", desc: "", price: 130 },
+    { name: "Brownie Loaded", desc: "", price: 140 },
+    { name: "Brownie Crunch", desc: "", price: 140 },
+    { name: "Brownie Nutties", desc: "", price: 140 },
+    { name: "Brownie Hazelnut", desc: "", price: 140 },
+    { name: "Swiss Brownie", desc: "", price: 140 },
+    { name: "Brownie Oreo Kitkat", desc: "", price: 150 },
+    { name: "Brownie Nutella", desc: "", price: 150 },
+    { name: "Brownie Roacher", desc: "", price: 160 },
+    { name: "Brownie Nutella Roacher", desc: "", price: 180 },
+  ]},
+  { cat: "Milk Shakes", items: [
+    { name: "Vanilla Milk Shake", desc: "", price: 130 },
+    { name: "Caramel Milk Shake", desc: "", price: 130 },
+    { name: "Biscoff Milk Shake", desc: "", price: 130 },
+    { name: "Mocha Milk Shake", desc: "", price: 130 },
+    { name: "Rajbhog Milk Shake", desc: "", price: 130 },
+    { name: "Chocolate Brownie", desc: "", price: 130 },
+    { name: "Chocolate", desc: "", price: 130 },
+    { name: "Nutella", desc: "", price: 130 },
+    { name: "Milkybar", desc: "", price: 130 },
+    { name: "Rose Gulkand", desc: "", price: 130 },
+    { name: "Almond Anjeer", desc: "", price: 130 },
+    { name: "Kesar Badam", desc: "", price: 130 },
+    { name: "Oreo Milk Shake", desc: "", price: 130 },
+  ]},
+  { cat: "Special Shakes", items: [
+    { name: "Nutties Roacher", desc: "", price: 140 },
+    { name: "Choco Lava Shake", desc: "", price: 140 },
+    { name: "Crunchy Crispello", desc: "", price: 140 },
+    { name: "Lotus Biscoff", desc: "", price: 150 },
+    { name: "Tiramisu Shake", desc: "", price: 150 },
+    { name: "Caramel Thick Shake", desc: "", price: 150 },
+    { name: "Roasted Almond Shake", desc: "", price: 150 },
+    { name: "Chocobar Thick Shake", desc: "", price: 160 },
+    { name: "Charcoal Litchi Shake", desc: "", price: 160 },
+    { name: "Waffle Crumbled Shake", desc: "", price: 160 },
+    { name: "Tender Coconut Shake", desc: "", price: 180 },
+    { name: "Gulab Jamun Fusion", desc: "New launch", price: 130 },
+    { name: "Rasmalai Shake", desc: "New launch", price: 150 },
+    { name: "Roacher Special", desc: "New launch", price: 140 }, // verify
+  ]},
+  { cat: "Dry Fruits", items: [
+    { name: "Royal Dryfruits", desc: "", price: 90 },
+    { name: "Kaju Anjeer", desc: "", price: 110 },
+    { name: "Almond Crunch", desc: "", price: 110 },
+    { name: "Cashewnuts Chocolate", desc: "", price: 110 },
+    { name: "Hazelnut Dryfruit", desc: "", price: 130 },
+    { name: "Mango Cashew/Badam", desc: "", price: 130 },
+    { name: "Kaju Gulkand", desc: "", price: 130 },
+    { name: "Rose Kaju", desc: "", price: 130 },
+    { name: "Kesar Pista Badam", desc: "", price: 140 },
+  ]},
+  { cat: "Fries", items: [
+    { name: "Simply Salted Fries", desc: "", price: 79 },
+    { name: "Peri Peri Fries", desc: "", price: 99 },
+    { name: "Peri Peri Cheese Blast", desc: "", price: 119 },
+    { name: "Cheese Loaded Fries", desc: "", price: 139 },
+    { name: "Junglee Fries", desc: "", price: 139 },
+    { name: "Special Fries Bowl", desc: "", price: 149 },
+  ]},
+  { cat: "Sandwich", items: [
+    { name: "Veg Sandwich", desc: "", price: 79 },
+    { name: "Cheese Grill Sandwich", desc: "", price: 99 },
+    { name: "Cheese Corn Sandwich", desc: "", price: 99 },
+    { name: "Schezwan Cheese Corn", desc: "", price: 99 },
+    { name: "Paneer Tandoori Cheese", desc: "", price: 129 },
+    { name: "Paneer Makhani Sandwich", desc: "", price: 129 },
+  ]},
+  { cat: "Maharaja Sandwich", items: [
+    { name: "Paneer Tikka Sandwich", desc: "", price: 149 },
+    { name: "Bombay Masala Sandwich", desc: "", price: 159 },
+    { name: "Special Jumbo Grill", desc: "", price: 159 },
+  ]},
+  { cat: "Momo's", items: [
+    { name: "Fried Momos", desc: "", price: 79 },
+    { name: "Peri Peri Momos", desc: "", price: 89 },
+    { name: "Veg Paneer Momos", desc: "", price: 99 },
+    { name: "Kurkure Veg Momos", desc: "", price: 99 },
+    { name: "Cheese Corn Momos", desc: "", price: 99 },
+    { name: "Kurkure Paneer Momos", desc: "", price: 119 },
+    { name: "Special Kadhai Momos", desc: "Tandoori, Peri Peri or Chipotle", price: 139 },
+  ]},
+  { cat: "Burger", items: [
+    { name: "Veg Burger", desc: "", price: 69 },
+    { name: "Aloo Tikki Burger", desc: "", price: 89 },
+    { name: "Veg Cheese Burger", desc: "", price: 89 },
+    { name: "Peri Peri Burger", desc: "", price: 109 },
+    { name: "Schezwan Burger", desc: "", price: 109 },
+    { name: "Paneer Tikka Burger", desc: "", price: 119 },
+    { name: "Four Cheese Burger", desc: "", price: 139 },
+  ]},
+  { cat: "Maggi", items: [
+    { name: "Plain Masala Maggi", desc: "", price: 69 },
+    { name: "Masala Cheese Maggi", desc: "", price: 79 },
+    { name: "Peri Peri Masala Maggi", desc: "", price: 79 },
+    { name: "Tandoori Maggi", desc: "", price: 79 },
+    { name: "Cheese Peri Peri Maggi", desc: "", price: 89 },
+    { name: "Tandoori Cheese Maggi", desc: "", price: 89 },
+    { name: "Punjabi Maggi", desc: "", price: 109 },
+    { name: "Cheese Spicy Maggi", desc: "", price: 119 },
+    { name: "Punjabi Cheese Maggi", desc: "", price: 129 },
+  ]},
+];
+
+const LS_KEY = 'browletto_menu_categories_v1';
+
+async function boot(){
+  const statusEl = document.getElementById('connStatus');
+
+  // 1) Try local save on this device first — always available, works instantly
+  const local = localStorage.getItem(LS_KEY);
+  if (local) {
+    try { CATEGORIES = JSON.parse(local); } catch(e) { CATEGORIES = []; }
+  }
+
+  // 2) If Firebase is configured, try to pull the cloud copy (source of truth across devices)
+  if (firebaseReady) {
+    try {
+      const doc = await db.collection('browletto').doc('menu').get();
+      if (doc.exists && doc.data().categories) {
+        CATEGORIES = doc.data().categories;
+        localStorage.setItem(LS_KEY, JSON.stringify(CATEGORIES));
+      }
+      statusEl.textContent = 'Connected to cloud';
+      statusEl.className = 'status ok';
+    } catch (e) {
+      statusEl.textContent = 'Cloud error — using local copy';
+      statusEl.className = 'status bad';
+      console.warn(e);
+    }
+  } else {
+    statusEl.textContent = 'Local only (no cloud sync yet)';
+    statusEl.className = 'status bad';
+  }
+
+  // 3) If nothing saved anywhere yet, start from the built-in default menu
+  if (!CATEGORIES || CATEGORIES.length === 0) {
+    CATEGORIES = JSON.parse(JSON.stringify(DEFAULT_MENU));
+  }
+
+  renderCategories();
+  listenOrders();
+}
+
+function seedDefault(){
+  if (CATEGORIES.length && !confirm('This replaces the current menu list below with the original default menu (unsaved edits will be lost). Continue?')) return;
+  CATEGORIES = JSON.parse(JSON.stringify(DEFAULT_MENU));
+  renderCategories();
+}
+
+function addCategory(){
+  CATEGORIES.push({ cat: 'New Category', items: [] });
+  renderCategories();
+}
+
+function addItem(catIdx){
+  CATEGORIES[catIdx].items.push({ name: 'New Item', desc: '', price: 0, available: true });
+  renderCategories();
+}
+
+function deleteItem(catIdx, itemIdx){
+  CATEGORIES[catIdx].items.splice(itemIdx, 1);
+  renderCategories();
+}
+
+function deleteCategory(catIdx){
+  if (!confirm('Delete this whole category?')) return;
+  CATEGORIES.splice(catIdx, 1);
+  renderCategories();
+}
+
+function renderCategories(){
+  const wrap = document.getElementById('catList');
+  wrap.innerHTML = '';
+  CATEGORIES.forEach((section, ci) => {
+    const block = document.createElement('div');
+    block.className = 'catblock';
+
+    const head = document.createElement('div');
+    head.className = 'cathead';
+    head.innerHTML = `<input type="text" value="${escapeHtml(section.cat)}"> <button class="del" title="Delete category">✕</button>`;
+    head.querySelector('input').oninput = (e) => { section.cat = e.target.value; };
+    head.querySelector('.del').onclick = () => deleteCategory(ci);
+    block.appendChild(head);
+
+    section.items.forEach((it, ii) => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `
+        <input type="text" value="${escapeHtml(it.name)}" placeholder="Item name">
+        <input type="number" value="${it.price}" placeholder="₹">
+        <label class="avail"><input type="checkbox" ${it.available === false ? '' : 'checked'}> In stock</label>
+        <button class="del">✕</button>
+      `;
+      row.querySelector('input[type=text]').oninput = e => { it.name = e.target.value; };
+      row.querySelector('input[type=number]').oninput = e => { it.price = Number(e.target.value) || 0; };
+      row.querySelector('input[type=checkbox]').onchange = e => { it.available = e.target.checked; };
+      row.querySelector('.del').onclick = () => deleteItem(ci, ii);
+      block.appendChild(row);
+    });
+
+    const addRow = document.createElement('div');
+    addRow.className = 'additem';
+    addRow.innerHTML = `<button>+ Add item to ${escapeHtml(section.cat)}</button>`;
+    addRow.querySelector('button').onclick = () => addItem(ci);
+    block.appendChild(addRow);
+
+    wrap.appendChild(block);
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function saveMenu(){
+  localStorage.setItem(LS_KEY, JSON.stringify(CATEGORIES));
+  if (!firebaseReady) {
+    alert('Saved on this device. To make edits show up on customers\' phones too, connect Firebase (see chat for setup steps) — until then use "Download menu backup" to move this menu to another device.');
+    return;
+  }
+  try {
+    await db.collection('browletto').doc('menu').set({ categories: CATEGORIES, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    alert('Saved. The live order page updates automatically.');
+  } catch (e) {
+    alert('Saved on this device, but cloud sync failed: ' + e.message);
+  }
+}
+
+function downloadBackup(){
+  const blob = new Blob([JSON.stringify(CATEGORIES, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'browletto-menu-backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function uploadBackup(input){
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!Array.isArray(parsed)) throw new Error('Not a valid menu file');
+      CATEGORIES = parsed;
+      renderCategories();
+      alert('Menu loaded from file. Click "Save Changes" to keep it.');
+    } catch (err) {
+      alert('Could not read that file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function listenOrders(){
+  if (!firebaseReady) {
+    document.getElementById('ordersList').innerHTML =
+      '<div class="empty">Orders will show up here once Firebase is connected — right now orders only go to your WhatsApp.</div>';
+    return;
+  }
+  db.collection('browletto_orders').orderBy('createdAt', 'desc').limit(50)
+    .onSnapshot(snap => {
+      const list = document.getElementById('ordersList');
+      if (snap.empty) { list.innerHTML = '<div class="empty">No orders yet.</div>'; return; }
+      list.innerHTML = '';
+      snap.forEach(doc => {
+        const o = doc.data();
+        const time = o.createdAt ? o.createdAt.toDate().toLocaleString() : 'just now';
+        const card = document.createElement('div');
+        card.className = 'order-card';
+        card.innerHTML = `
+          <div class="top">
+            <span class="time">${time}</span>
+            <select data-id="${doc.id}">
+              <option value="new" ${o.status==='new'?'selected':''}>New</option>
+              <option value="preparing" ${o.status==='preparing'?'selected':''}>Preparing</option>
+              <option value="ready" ${o.status==='ready'?'selected':''}>Ready</option>
+              <option value="completed" ${o.status==='completed'?'selected':''}>Completed</option>
+            </select>
+          </div>
+          <ul>${(o.items||[]).map(it => `<li>${escapeHtml(it.name)} x${it.qty} — ₹${it.qty*it.price}</li>`).join('')}</ul>
+          <div class="total">Total ₹${o.total}</div>
+        `;
+        card.querySelector('select').onchange = (e) => {
+          db.collection('browletto_orders').doc(doc.id).update({ status: e.target.value });
+        };
+        list.appendChild(card);
+      });
+    });
+}
+</script>
+
+</body>
+</html>

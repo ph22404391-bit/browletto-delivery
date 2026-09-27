@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browletto — Order</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#8A4A38">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Browletto">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+  :root{
+    --bg:#F0E1D2;
+    --card:#FAF3E9;
+    --brown:#8A4A38;
+    --brown-dark:#5C2E22;
+    --ink:#4A2A1F;
+    --line:rgba(90,46,34,0.16);
+    --accent:#B5694E;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Space Grotesk',sans-serif;
+    min-height:100vh;
+  }
+  header{
+    padding:34px 20px 22px;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+  }
+  header .logo{
+    display:flex;
+    justify-content:center;
+    margin-bottom:10px;
+  }
+  header .logo svg{ height:46px; width:auto; }
+  header .mark{
+    font-family:'Poppins',sans-serif;
+    font-weight:800;
+    font-size:30px;
+    letter-spacing:4px;
+    color:var(--brown-dark);
+  }
+  header .tag{
+    font-size:11.5px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-top:6px;
+    font-weight:600;
+  }
+
+  .catnav{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+    padding:10px 12px;
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .catnav::-webkit-scrollbar{ display:none; }
+  .catnav button{
+    flex:none;
+    padding:7px 14px;
+    border-radius:20px;
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--brown-dark);
+    font-family:'Poppins',sans-serif;
+    font-size:12px;
+    font-weight:600;
+    white-space:nowrap;
+    cursor:pointer;
+  }
+  .catnav button.active{
+    background:var(--brown);
+    border-color:var(--brown);
+    color:#fff;
+  }
+
+  .item.soldout{ opacity:0.5; }
+  .soldout-tag{
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--accent);
+  }
+
+  .menu{
+    padding:20px 16px 150px;
+    max-width:520px;
+    margin:0 auto;
+  }
+  .cat{
+    font-family:'Poppins',sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--brown);
+    margin:30px 0 10px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .cat::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+
+  .item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    padding:14px 14px;
+    margin-bottom:8px;
+    background:var(--card);
+    border-radius:14px;
+    border:1px solid var(--line);
+  }
+  .item-info h3{
+    font-family:'Poppins',sans-serif;
+    font-weight:600;
+    font-size:16px;
+    margin:0 0 3px;
+    color:var(--brown-dark);
+  }
+  .item-info p{
+    margin:0;
+    font-size:12.5px;
+    color:rgba(74,42,31,0.55);
+  }
+  .item-price{
+    font-size:14px;
+    font-weight:600;
+    color:var(--accent);
+    white-space:nowrap;
+    margin-left:8px;
+  }
+
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:92px;
+    justify-content:flex-end;
+  }
+  .stepper button{
+    width:28px;height:28px;
+    border-radius:50%;
+    border:1px solid var(--brown);
+    background:transparent;
+    color:var(--brown);
+    font-size:16px;
+    line-height:1;
+    cursor:pointer;
+  }
+  .stepper button:active{ background:var(--brown); color:var(--card); }
+  .stepper .qty{ min-width:14px; text-align:center; font-size:14px; font-weight:600; }
+
+  .addbtn{
+    padding:6px 14px;
+    border-radius:20px;
+    border:1px solid var(--brown);
+    background:transparent;
+    color:var(--brown);
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+  }
+
+  .cartbar{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    background:var(--card);
+    border-top:1px solid var(--line);
+    box-shadow:0 -6px 20px rgba(90,46,34,0.08);
+    padding:14px 16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    max-width:520px;
+    margin:0 auto;
+  }
+  .cartbar.hidden{ display:none; }
+  .cartbar .total{
+    font-family:'Poppins',sans-serif;
+    font-weight:600;
+    font-size:16px;
+    color:var(--brown-dark);
+  }
+  .cartbar .total span{ color:var(--accent); }
+  .sendbtn{
+    background:linear-gradient(135deg,#25D366,#1EBE5A);
+    color:#0e2b16;
+    border:none;
+    padding:12px 20px;
+    border-radius:30px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .note{
+    max-width:520px;
+    margin:24px auto 0;
+    padding:0 16px;
+    font-size:12px;
+    color:rgba(74,42,31,0.5);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#5C2E22" stroke-width="4.5" fill="none">
+        <rect x="24" y="8" width="20" height="20"/>
+        <rect x="56" y="8" width="20" height="20"/>
+        <path d="M24 28 L44 8 M56 28 L76 8"/>
+      </g>
+    </svg>
+  </div>
+  <div class="mark">BROWLETTO</div>
+  <div class="tag">Dhule · Order direct, skip the app fees</div>
+</header>
+
+<div class="catnav" id="catnav"></div>
+
+<div class="menu" id="menu"></div>
+
+<div class="cartbar hidden" id="cartbar">
+  <div class="total">Total <span id="totalAmt">₹0</span></div>
+  <button class="sendbtn" id="sendBtn">Send on WhatsApp →</button>
+</div>
+
+<p class="note">Tap + to add items, then send. Your order opens pre-filled in WhatsApp — just hit send there to confirm.</p>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+// ── Your WhatsApp business number ──
+const WHATSAPP_NUMBER = "918788008560";
+
+// ── Transcribed from your menu photos — please skim for typos/price errors before publishing ──
+const DEFAULT_MENU = [
+  { cat: "Waffles", items: [
+    { name: "Belgium Milk Chocolate", desc: "", price: 130 },
+    { name: "Belgium White Chocolate", desc: "", price: 130 },
+    { name: "Belgium Dark Chocolate", desc: "", price: 130 },
+    { name: "Cadbury Waffle", desc: "", price: 130 },
+    { name: "Brownie Waffle", desc: "", price: 130 },
+    { name: "Oreo Waffle", desc: "", price: 130 },
+    { name: "Kitkat Waffle", desc: "", price: 130 },
+    { name: "Triple Chocolate Waffle", desc: "", price: 130 },
+    { name: "Brownie Kitkat Waffle", desc: "", price: 140 },
+    { name: "Hazelnut Waffle", desc: "", price: 140 },
+    { name: "Coffee Crunch Waffle", desc: "", price: 140 },
+    { name: "Nutella Naked", desc: "", price: 140 },
+    { name: "Crunchy Nutella Waffle", desc: "", price: 140 },
+    { name: "Biscoff Waffle", desc: "", price: 140 },
+    { name: "Biscoff Nutella Waffle", desc: "", price: 140 },
+    { name: "Red Velvet Waffle", desc: "", price: 150 },
+    { name: "Kunafa Waffle", desc: "", price: 160 },
+    { name: "Add-on Ice Cream", desc: "", price: 30 },
+    { name: "Dry-fruit Single Layer Waffle Cake", desc: "", price: 300 }, // verify
+    { name: "Double Layer Waffle Cake", desc: "", price: 350 }, // verify
+    { name: "Dry-fruit Double Layer Waffle Cake", desc: "", price: 500 }, // verify
+  ]},
+  { cat: "Hot Melting Brownies", items: [
+    { name: "Choco Lava Cake", desc: "", price: 80 },
+    { name: "Brownie Chocochips", desc: "", price: 100 },
+    { name: "Brownie Fudge", desc: "", price: 100 },
+    { name: "Red Velvet Lava Cake", desc: "", price: 100 },
+    { name: "White Chocolate Brownie Fudge", desc: "", price: 130 },
+    { name: "Sizzling Brownie", desc: "", price: 130 },
+    { name: "Nutella Brownie Fudge", desc: "", price: 130 },
+    { name: "Nutella Kitkat Brownie", desc: "", price: 140 },
+    { name: "Roasted Almond Brownie", desc: "", price: 140 },
+    { name: "Macadamia Almonds Brownie", desc: "", price: 140 },
+    { name: "Oreo Brownie Fudge", desc: "", price: 140 },
+    { name: "Hazelnut Brownie Fudge", desc: "", price: 140 },
+    { name: "Kunafa Brownie", desc: "", price: 170 }, // verify
+    { name: "Biscoff Brownie", desc: "", price: 170 }, // verify
+  ]},
+  { cat: "Ice Creams", items: [
+    { name: "Vanilla", desc: "", price: 50 },
+    { name: "Strawberry", desc: "", price: 50 },
+    { name: "Butterscotch", desc: "", price: 60 },
+    { name: "Cookies and Cream", desc: "", price: 60 },
+    { name: "Choco Chips", desc: "", price: 60 },
+    { name: "Black Current", desc: "", price: 60 },
+    { name: "American Nuts", desc: "", price: 70 },
+    { name: "Mango", desc: "", price: 70 },
+    { name: "Swiss Cake", desc: "", price: 70 },
+    { name: "Roasted Almond", desc: "", price: 70 },
+    { name: "Blueberry Cheese Cake", desc: "", price: 70 },
+    { name: "Rajwadi", desc: "", price: 80 },
+    { name: "Tajmahal", desc: "", price: 80 },
+    { name: "Mud Cake", desc: "", price: 80 },
+    { name: "Tender Coconut", desc: "", price: 80 },
+    { name: "Charcoal Litchi", desc: "", price: 80 },
+    { name: "Kesar Pista", desc: "", price: 80 },
+    { name: "Dark Chocolate", desc: "", price: 80 },
+    { name: "Mocha Brownie Fudge", desc: "", price: 80 },
+  ]},
+  { cat: "Shots", items: [
+    { name: "Jamun Shots", desc: "", price: 100 },
+    { name: "Guava Shots", desc: "", price: 100 },
+  ]},
+  { cat: "Mini Pan Cakes", items: [
+    { name: "Milk Chocolate", desc: "", price: 150 },
+    { name: "Dark Knight", desc: "", price: 150 },
+    { name: "White Beauty", desc: "", price: 150 },
+    { name: "Kitkat Break", desc: "", price: 150 },
+    { name: "Triple Loaded", desc: "", price: 150 },
+    { name: "Biscoff Loaded", desc: "", price: 150 },
+    { name: "Oreo", desc: "", price: 150 },
+    { name: "Nutella Crunch", desc: "", price: 150 },
+    { name: "Crunchy Almond", desc: "", price: 160 }, // verify
+  ]},
+  { cat: "Sugar-Free Ice Cream", items: [
+    { name: "Vanilla", desc: "", price: 110 },
+    { name: "Chocolate", desc: "", price: 110 },
+    { name: "Kesar Pista", desc: "", price: 120 },
+    { name: "Anjeer", desc: "", price: 120 },
+  ]},
+  { cat: "Hot Chocolates", items: [
+    { name: "Hot Chocolate", desc: "", price: 130 },
+    { name: "Vanilla Hot Chocolate", desc: "", price: 130 },
+    { name: "Hazelnut Hot Chocolate", desc: "", price: 130 },
+    { name: "Brownie Hot Chocolate", desc: "", price: 130 },
+    { name: "Coffee Hot Chocolate", desc: "", price: 130 },
+    { name: "Tiramisu Hot Chocolate", desc: "", price: 130 },
+    { name: "Chocolate Cookie", desc: "", price: 130 },
+    { name: "Cookie Hot Chocolate", desc: "", price: 150 },
+  ]},
+  { cat: "Hot Coffee", items: [
+    { name: "Hot Coffee", desc: "", price: 80 },
+    { name: "Black Americano", desc: "", price: 80 },
+    { name: "Cappuccino", desc: "", price: 90 },
+    { name: "French Vanilla Latte", desc: "", price: 100 },
+    { name: "Cafe Mocha", desc: "", price: 100 },
+    { name: "Nutella Mocha", desc: "", price: 100 },
+    { name: "White Mocha", desc: "", price: 100 },
+  ]},
+  { cat: "Coffee & Frappe", items: [
+    { name: "Cold Coffee", desc: "", price: 100 },
+    { name: "Cafe Frappe", desc: "", price: 110 },
+    { name: "Irish Frappe", desc: "", price: 130 },
+    { name: "Hazelnut Frappe", desc: "", price: 130 },
+    { name: "Choco Frappe", desc: "", price: 130 },
+    { name: "Chocolate Cookie Frappe", desc: "", price: 130 },
+    { name: "Cookie Coffee Latte", desc: "", price: 150 },
+    { name: "Tiramisu Cake", desc: "New launch", price: 130 },
+    { name: "Treslache", desc: "New launch", price: 180 },
+  ]},
+  { cat: "Classic Shakes", items: [
+    { name: "Plain Vanilla", desc: "", price: 70 },
+    { name: "Choco Rose", desc: "", price: 70 },
+    { name: "Choco Pie", desc: "", price: 90 },
+    { name: "Belgium Choco Chips", desc: "", price: 90 },
+    { name: "Munch", desc: "", price: 90 },
+    { name: "Rose Gulkand", desc: "", price: 100 },
+    { name: "Gems", desc: "", price: 100 }, // verify
+    { name: "Paan Masti", desc: "", price: 110 },
+    { name: "Bubble Gum", desc: "", price: 110 },
+    { name: "Oreo", desc: "", price: 110 },
+    { name: "Kitkat", desc: "", price: 110 },
+    { name: "Swiss", desc: "", price: 110 },
+    { name: "Chocolate Fudge", desc: "", price: 110 },
+    { name: "Cadbury Silk", desc: "", price: 110 },
+    { name: "Snickers", desc: "", price: 110 },
+    { name: "Red Velvet Shake", desc: "", price: 130 },
+    { name: "Coffee Caramel Shake", desc: "", price: 130 },
+  ]},
+  { cat: "Natural Shakes", items: [
+    { name: "Strawberry", desc: "", price: 80 },
+    { name: "Mango", desc: "", price: 90 },
+    { name: "Litchi", desc: "", price: 100 },
+    { name: "Sitaphal", desc: "", price: 100 },
+    { name: "Pineapple", desc: "", price: 110 },
+    { name: "Chikoo", desc: "", price: 110 },
+    { name: "Triple Berry", desc: "", price: 130 },
+    { name: "Blueberry", desc: "", price: 130 },
+    { name: "Raspberry", desc: "", price: 140 },
+    { name: "Mango Alphonso", desc: "", price: 160 },
+  ]},
+  { cat: "Nutella Lover's", items: [
+    { name: "Plain Nutella", desc: "", price: 110 },
+    { name: "Crunchy Nutella", desc: "", price: 140 },
+    { name: "Oreo Nutella", desc: "", price: 140 },
+    { name: "Kitkat Nutella", desc: "", price: 140 },
+    { name: "Nutties Nutella", desc: "", price: 140 },
+    { name: "Swiss Nutella", desc: "", price: 160 },
+    { name: "Roacher Nutella", desc: "", price: 160 },
+    { name: "Nutella Biscoff", desc: "", price: 160 },
+  ]},
+  { cat: "Brownie Thick Shakes", items: [
+    { name: "Brewing Brownie", desc: "", price: 130 },
+    { name: "Brownie Loaded", desc: "", price: 140 },
+    { name: "Brownie Crunch", desc: "", price: 140 },
+    { name: "Brownie Nutties", desc: "", price: 140 },
+    { name: "Brownie Hazelnut", desc: "", price: 140 },
+    { name: "Swiss Brownie", desc: "", price: 140 },
+    { name: "Brownie Oreo Kitkat", desc: "", price: 150 },
+    { name: "Brownie Nutella", desc: "", price: 150 },
+    { name: "Brownie Roacher", desc: "", price: 160 },
+    { name: "Brownie Nutella Roacher", desc: "", price: 180 },
+  ]},
+  { cat: "Milk Shakes", items: [
+    { name: "Vanilla Milk Shake", desc: "", price: 130 },
+    { name: "Caramel Milk Shake", desc: "", price: 130 },
+    { name: "Biscoff Milk Shake", desc: "", price: 130 },
+    { name: "Mocha Milk Shake", desc: "", price: 130 },
+    { name: "Rajbhog Milk Shake", desc: "", price: 130 },
+    { name: "Chocolate Brownie", desc: "", price: 130 },
+    { name: "Chocolate", desc: "", price: 130 },
+    { name: "Nutella", desc: "", price: 130 },
+    { name: "Milkybar", desc: "", price: 130 },
+    { name: "Rose Gulkand", desc: "", price: 130 },
+    { name: "Almond Anjeer", desc: "", price: 130 },
+    { name: "Kesar Badam", desc: "", price: 130 },
+    { name: "Oreo Milk Shake", desc: "", price: 130 },
+  ]},
+  { cat: "Special Shakes", items: [
+    { name: "Nutties Roacher", desc: "", price: 140 },
+    { name: "Choco Lava Shake", desc: "", price: 140 },
+    { name: "Crunchy Crispello", desc: "", price: 140 },
+    { name: "Lotus Biscoff", desc: "", price: 150 },
+    { name: "Tiramisu Shake", desc: "", price: 150 },
+    { name: "Caramel Thick Shake", desc: "", price: 150 },
+    { name: "Roasted Almond Shake", desc: "", price: 150 },
+    { name: "Chocobar Thick Shake", desc: "", price: 160 },
+    { name: "Charcoal Litchi Shake", desc: "", price: 160 },
+    { name: "Waffle Crumbled Shake", desc: "", price: 160 },
+    { name: "Tender Coconut Shake", desc: "", price: 180 },
+    { name: "Gulab Jamun Fusion", desc: "New launch", price: 130 },
+    { name: "Rasmalai Shake", desc: "New launch", price: 150 },
+    { name: "Roacher Special", desc: "New launch", price: 140 }, // verify
+  ]},
+  { cat: "Dry Fruits", items: [
+    { name: "Royal Dryfruits", desc: "", price: 90 },
+    { name: "Kaju Anjeer", desc: "", price: 110 },
+    { name: "Almond Crunch", desc: "", price: 110 },
+    { name: "Cashewnuts Chocolate", desc: "", price: 110 },
+    { name: "Hazelnut Dryfruit", desc: "", price: 130 },
+    { name: "Mango Cashew/Badam", desc: "", price: 130 },
+    { name: "Kaju Gulkand", desc: "", price: 130 },
+    { name: "Rose Kaju", desc: "", price: 130 },
+    { name: "Kesar Pista Badam", desc: "", price: 140 },
+  ]},
+  { cat: "Fries", items: [
+    { name: "Simply Salted Fries", desc: "", price: 79 },
+    { name: "Peri Peri Fries", desc: "", price: 99 },
+    { name: "Peri Peri Cheese Blast", desc: "", price: 119 },
+    { name: "Cheese Loaded Fries", desc: "", price: 139 },
+    { name: "Junglee Fries", desc: "", price: 139 },
+    { name: "Special Fries Bowl", desc: "", price: 149 },
+  ]},
+  { cat: "Sandwich", items: [
+    { name: "Veg Sandwich", desc: "", price: 79 },
+    { name: "Cheese Grill Sandwich", desc: "", price: 99 },
+    { name: "Cheese Corn Sandwich", desc: "", price: 99 },
+    { name: "Schezwan Cheese Corn", desc: "", price: 99 },
+    { name: "Paneer Tandoori Cheese", desc: "", price: 129 },
+    { name: "Paneer Makhani Sandwich", desc: "", price: 129 },
+  ]},
+  { cat: "Maharaja Sandwich", items: [
+    { name: "Paneer Tikka Sandwich", desc: "", price: 149 },
+    { name: "Bombay Masala Sandwich", desc: "", price: 159 },
+    { name: "Special Jumbo Grill", desc: "", price: 159 },
+  ]},
+  { cat: "Momo's", items: [
+    { name: "Fried Momos", desc: "", price: 79 },
+    { name: "Peri Peri Momos", desc: "", price: 89 },
+    { name: "Veg Paneer Momos", desc: "", price: 99 },
+    { name: "Kurkure Veg Momos", desc: "", price: 99 },
+    { name: "Cheese Corn Momos", desc: "", price: 99 },
+    { name: "Kurkure Paneer Momos", desc: "", price: 119 },
+    { name: "Special Kadhai Momos", desc: "Tandoori, Peri Peri or Chipotle", price: 139 },
+  ]},
+  { cat: "Burger", items: [
+    { name: "Veg Burger", desc: "", price: 69 },
+    { name: "Aloo Tikki Burger", desc: "", price: 89 },
+    { name: "Veg Cheese Burger", desc: "", price: 89 },
+    { name: "Peri Peri Burger", desc: "", price: 109 },
+    { name: "Schezwan Burger", desc: "", price: 109 },
+    { name: "Paneer Tikka Burger", desc: "", price: 119 },
+    { name: "Four Cheese Burger", desc: "", price: 139 },
+  ]},
+  { cat: "Maggi", items: [
+    { name: "Plain Masala Maggi", desc: "", price: 69 },
+    { name: "Masala Cheese Maggi", desc: "", price: 79 },
+    { name: "Peri Peri Masala Maggi", desc: "", price: 79 },
+    { name: "Tandoori Maggi", desc: "", price: 79 },
+    { name: "Cheese Peri Peri Maggi", desc: "", price: 89 },
+    { name: "Tandoori Cheese Maggi", desc: "", price: 89 },
+    { name: "Punjabi Maggi", desc: "", price: 109 },
+    { name: "Cheese Spicy Maggi", desc: "", price: 119 },
+    { name: "Punjabi Cheese Maggi", desc: "", price: 129 },
+  ]},
+];
+
+// ── Live menu (starts as the default above, overwritten if the admin panel has published changes) ──
+let MENU = JSON.parse(JSON.stringify(DEFAULT_MENU));
+
+// ── Firebase config — same project used by the Browletto admin panel. Fill in once, admin edits then show up here automatically. ──
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+let db = null;
+let firebaseReady = false;
+try {
+  if (typeof firebase !== 'undefined' && firebaseConfig.projectId !== "YOUR_PROJECT_ID") {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    firebaseReady = true;
+  }
+} catch (e) { console.warn('Firebase not configured yet, using built-in menu.', e); }
+
+const LS_KEY = 'browletto_menu_categories_v1';
+
+async function loadLiveMenu(){
+  // Same-device testing: if the admin panel was used in this browser without Firebase set up,
+  // pick up its local backup so you can preview changes before going live.
+  if (!firebaseReady) {
+    const local = localStorage.getItem(LS_KEY);
+    if (local) {
+      try { MENU = JSON.parse(local); } catch(e) {}
+    }
+    render();
+    return;
+  }
+  try {
+    const doc = await db.collection('browletto').doc('menu').get();
+    if (doc.exists && doc.data().categories) {
+      MENU = doc.data().categories;
+    }
+  } catch (e) {
+    console.warn('Could not load live menu, using default.', e);
+  }
+  render();
+  // Keep menu live-updated if admin makes a change while a customer is browsing
+  if (db) {
+    db.collection('browletto').doc('menu').onSnapshot(doc => {
+      if (doc.exists && doc.data().categories) {
+        MENU = doc.data().categories;
+        render();
+      }
+    });
+  }
+}
+
+const cart = {}; // name -> {qty, price}
+
+function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-'); }
+
+function renderNav(){
+  const nav = document.getElementById('catnav');
+  nav.innerHTML = '';
+  MENU.forEach(section => {
+    const btn = document.createElement('button');
+    btn.textContent = section.cat;
+    btn.dataset.target = slug(section.cat);
+    btn.onclick = () => {
+      document.getElementById('sec-' + slug(section.cat))
+        .scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    nav.appendChild(btn);
+  });
+}
+
+function render(){
+  renderNav();
+  const menuEl = document.getElementById('menu');
+  menuEl.innerHTML = '';
+  MENU.forEach(section => {
+    const secWrap = document.createElement('div');
+    secWrap.id = 'sec-' + slug(section.cat);
+
+    const catEl = document.createElement('div');
+    catEl.className = 'cat';
+    catEl.textContent = section.cat;
+    secWrap.appendChild(catEl);
+
+    section.items.forEach(it => {
+      const isSoldOut = it.available === false;
+      const qty = cart[it.name]?.qty || 0;
+      const row = document.createElement('div');
+      row.className = 'item' + (isSoldOut ? ' soldout' : '');
+      row.innerHTML = `
+        <div class="item-info">
+          <h3>${it.name}</h3>
+          <p>${it.desc || ''}</p>
+          <div class="item-price">₹${it.price}</div>
+        </div>
+        <div class="control"></div>
+      `;
+      const control = row.querySelector('.control');
+      if (isSoldOut) {
+        const tag = document.createElement('span');
+        tag.className = 'soldout-tag';
+        tag.textContent = 'Sold out';
+        control.appendChild(tag);
+      } else if (qty === 0) {
+        const btn = document.createElement('button');
+        btn.className = 'addbtn';
+        btn.textContent = 'Add +';
+        btn.onclick = () => { setQty(it, 1); };
+        control.appendChild(btn);
+      } else {
+        control.innerHTML = `
+          <div class="stepper">
+            <button class="minus">−</button>
+            <span class="qty">${qty}</span>
+            <button class="plus">+</button>
+          </div>`;
+        control.querySelector('.minus').onclick = () => setQty(it, qty - 1);
+        control.querySelector('.plus').onclick = () => setQty(it, qty + 1);
+      }
+      secWrap.appendChild(row);
+    });
+    menuEl.appendChild(secWrap);
+  });
+  updateCartBar();
+  setupActiveNavTracking();
+}
+
+let navObserver = null;
+function setupActiveNavTracking(){
+  if (navObserver) navObserver.disconnect();
+  const navButtons = [...document.querySelectorAll('#catnav button')];
+  navObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id.replace('sec-', '');
+        navButtons.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+      }
+    });
+  }, { rootMargin: '-100px 0px -70% 0px' });
+  document.querySelectorAll('.menu > div[id^="sec-"]').forEach(sec => navObserver.observe(sec));
+}
+
+function setQty(item, qty){
+  if(qty <= 0){ delete cart[item.name]; }
+  else { cart[item.name] = { qty, price: item.price }; }
+  render();
+}
+
+function updateCartBar(){
+  const bar = document.getElementById('cartbar');
+  const entries = Object.entries(cart);
+  if(entries.length === 0){ bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  const total = entries.reduce((sum,[,v]) => sum + v.qty * v.price, 0);
+  document.getElementById('totalAmt').textContent = `₹${total}`;
+}
+
+document.getElementById('sendBtn').onclick = () => {
+  const entries = Object.entries(cart);
+  if(entries.length === 0) return;
+  let msg = "Hi Browletto! I'd like to order:\n\n";
+  let total = 0;
+  entries.forEach(([name, v]) => {
+    msg += `• ${name} x${v.qty} — ₹${v.qty * v.price}\n`;
+    total += v.qty * v.price;
+  });
+  msg += `\nTotal: ₹${total}\n\nName:\nDelivery address:\nPayment: UPI / COD`;
+
+  if (db) {
+    db.collection('browletto_orders').add({
+      items: entries.map(([name, v]) => ({ name, qty: v.qty, price: v.price })),
+      total,
+      status: 'new',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(e => console.warn('Order log failed (order still sends on WhatsApp):', e));
+  }
+
+  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+};
+
+loadLiveMenu();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW registration failed', e));
+  });
+}
+</script>
+
+</body>
+</html>

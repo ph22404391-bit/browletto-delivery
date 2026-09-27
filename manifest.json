@@ -1,0 +1,15 @@
+{
+  "name": "Browletto - Order",
+  "short_name": "Browletto",
+  "description": "Order direct from Browletto — desserts, coffee, shakes and snacks",
+  "start_url": "./browletto-order.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F0E1D2",
+  "theme_color": "#8A4A38",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
